@@ -1,20 +1,21 @@
-# # if __name__ == '__main__':
-# #     pass
-# from pprint import pprint
-# import requests
-# import json
-#
-# # import dotenv
-#
-#
-# # API_KEY = {
-# #     "X-API-KEY": "YOUR API KEY"
-# USER_FILM_NAME = "Хатико"
-# PARAMS = {
-#     "keyword": USER_FILM_NAME
-# }
-#
-#
+# if __name__ == '__main__':
+#     pass
+from pprint import pprint
+import requests
+import json
+
+# import dotenv
+
+
+API_KEY = {
+    "X-API-KEY": "you api"
+}
+USER_FILM_NAME = "Хатико"
+PARAMS = {
+    "keyword": USER_FILM_NAME
+}
+
+
 # # ses = requests.session()
 # # ses.headers = API_KEY
 # # #
@@ -42,32 +43,32 @@
 # # pprint(FILM_TRAILER)
 # # # pprint(response_b)
 #
-#
-# class APIController:
-#     def __init__(self, api_key):  # "Хатико"
-#         # self.user_film_name = user_film_name
-#         self.ses = requests.session()
-#         self.ses.headers = api_key
-#         # self.film_dict = dict()
-#         # self.film_info = json.loads(self.ses.get("https://kinopoiskapiunofficial.tech/api/v2.2/films",
-#         #                                          params=PARAMS).text)["items"]
-#
-#     def get_similar_film(self, keyword):
-#         params = {
-#             "keyword": keyword
-#         }
-#         response = self.ses.get("https://kinopoiskapiunofficial.tech/api/v2.2/films", params=params)
-#         return json.loads(response.text)["items"]
-#
-#     def get_film_trailer(self, films_info):
-#         for film_info in films_info:
-#             response = json.loads(self.ses.get(f"https://kinopoiskapiunofficial.tech/api/v2.2/films/{film_info['kinopoiskId']}/videos").text)
-#             film_info["trailer"] = response["items"]
-#         return films_info
-#
-#     # def __str__(self):
-#     #     return
-#
-#
-# my_film = APIController(api_key=API_KEY)
-# pprint(my_film.get_film_trailer(my_film.get_similar_film(USER_FILM_NAME)))
+
+class APIController:
+    def __init__(self, api_key):  # "Хатико"
+        # self.user_film_name = user_film_name
+        self.ses = requests.session()
+        self.ses.headers = api_key
+        # self.film_dict = dict()
+        # self.film_info = json.loads(self.ses.get("https://kinopoiskapiunofficial.tech/api/v2.2/films",
+        #                                          params=PARAMS).text)["items"]
+
+    def get_similar_film(self, keyword):
+        params = {
+            "keyword": keyword
+        }
+        response = self.ses.get("https://kinopoiskapiunofficial.tech/api/v2.2/films", params=params)
+        return json.loads(response.text)["items"]
+
+    def get_film_trailer(self, films_info):
+        for film_info in films_info:
+            response = json.loads(self.ses.get(f"https://kinopoiskapiunofficial.tech/api/v2.2/films/{film_info['kinopoiskId']}/videos").text)
+            film_info["trailer"] = response["items"]
+        return films_info
+
+    # def __str__(self):
+    #     return
+
+
+my_film = APIController(api_key=API_KEY)
+pprint(my_film.get_film_trailer(my_film.get_similar_film(USER_FILM_NAME)))
