@@ -1,5 +1,0 @@
-aiogram<4.0
-pydantic-settings
-
-requests~=2.32.3
-pydantic~=2.8.2

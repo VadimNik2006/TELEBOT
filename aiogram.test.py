@@ -1,12 +1,10 @@
 import asyncio
 import logging
 from aiogram import Bot, Dispatcher, types
-from aiogram.filters.command import Command
 from aiogram.filters.state import StateFilter
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.context import FSMContext
 from config_reader import config
-# Новый импорт
 from aiogram.types import LinkPreviewOptions
 import re
 from aiogram import F
@@ -15,7 +13,6 @@ from aiogram.filters import Command, CommandObject, CommandStart
 from aiogram.types import FSInputFile, URLInputFile, BufferedInputFile
 
 
-# print(config)
 bot = Bot(token=config.bot_token.get_secret_value())
 
 logging.basicConfig(level=logging.INFO)
