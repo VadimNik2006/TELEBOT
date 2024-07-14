@@ -18,7 +18,7 @@ def singleton(cls):
 class APIController:
     def __init__(self, api_key):
         self.ses = requests.session()
-        self.ses.headers = api_key
+        self.ses.headers = {'X-API-KEY': api_key.get_secret_value()}
 
     def get_similar_film(self, keyword):
         params = {
