@@ -1,14 +1,16 @@
 from aiogram import types
 
 
-def create_search_kb():
+def search_buttons():
     buttons = [
         [
-            types.InlineKeyboardButton(text="получить полную информацию о фильме", callback_data="full_info"),
-        ],
-        [
-            types.InlineKeyboardButton(text="получить трейлеры фильма", callback_data="trailers"),
+            types.InlineKeyboardButton(text="полная информация", callback_data="full_info"),
+            types.InlineKeyboardButton(text="трейлеры", callback_data="trailers"),
         ]
     ]
-    keyboard = types.InlineKeyboardMarkup(inline_keyboard=buttons)
+    return buttons
+
+
+def create_search_kb():
+    keyboard = types.InlineKeyboardMarkup(inline_keyboard=search_buttons())
     return keyboard
