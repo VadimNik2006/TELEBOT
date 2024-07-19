@@ -10,8 +10,8 @@ def create_start_kb():
     buttons = [
         [
             types.InlineKeyboardButton(text="список команд",
-                                       callback_data=MenuCallback(section="commands_list").pack()),
-            types.InlineKeyboardButton(text="поиск фильмов", callback_data=MenuCallback(section="search").pack())
+                                       callback_data=MenuCallback(section="help").pack()),
+            types.InlineKeyboardButton(text="поиск фильмов", callback_data=MenuCallback(section="search_movie").pack())
         ],
         [
             types.InlineKeyboardButton(text="история", callback_data=MenuCallback(section="history").pack()),

@@ -16,14 +16,14 @@ from difflib import SequenceMatcher
 route = Router()
 
 
-@route.message(Command("history"))
-async def cmd_start(message: types.Message):
-    content = Text(
-        "Привет, ",
-        Bold(message.from_user.username)
-    )
-    await message.answer(**content.as_kwargs())
-    await message.answer(
-        messages["start"]["main"],
-        reply_markup=create_start_kb()
-    )
+# @route.message(Command("history"))
+# async def cmd_start(message: types.Message):
+#     content = Text(
+#         "Привет, ",
+#         Bold(message.from_user.username)
+#     )
+#     await message.answer(**content.as_kwargs())
+#     await message.answer(
+#         messages["start"]["main"],
+#         reply_markup=create_start_kb()
+#     )

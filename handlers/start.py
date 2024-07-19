@@ -7,7 +7,7 @@ from handlers.help import send_help_message
 from keybords.cmd_start.start_inline import create_start_kb, MenuCallback
 from messages import messages
 from states.for_start_hand import Keyword
-
+from typing import Union
 
 route = Router()
 
@@ -25,18 +25,28 @@ async def cmd_start(message: types.Message):
     )
 
 
-@route.callback_query(StateFilter(None), MenuCallback.filter())
+@route.callback_query(MenuCallback.filter())
 async def callbacks_command_start(callback: types.CallbackQuery, callback_data: MenuCallback, state: FSMContext):
-    if callback_data.section == "commands_list":
-        await send_help_message(callback.message)
-    elif callback_data.section == "search":
-        await callback.message.answer("Введите ключевое слово в названии фильма")
-        await state.set_state(Keyword.wait_from_similar)
-    elif callback_data.section == "history":
-        await callback.message.edit_text(f"Итого: ")
-    elif callback_data.section == "favorite":
-        await callback.message.edit_text(f"Итого: ")
-    # elif callback.data == "start":
-    #     await callback.message.edit_text(f"Итого: ")
+    await call_command(callback, state, callback_data.section)
 
-    await callback.answer()
+
+@route.message(Command(commands=["help", "search_movie", "history", "favorite"]))
+async def base_commands_handler(message: types.Message, state: FSMContext):
+    await call_command(message, state, message.text[1:])
+
+
+async def call_command(update: Union[types.CallbackQuery, types.Message], state: FSMContext, command: str):
+    if isinstance(update, types.CallbackQuery):
+        message = update.message
+    else:
+        message = update
+
+    if command == "help":
+        await send_help_message(message)
+    elif command == "search_movie":
+        await message.answer("Введите ключевое слово в названии фильма")
+        await state.set_state(Keyword.wait_from_similar)
+    elif command == "history":
+        await message.edit_text(f"Итого: ")
+    elif command == "favorite":
+        await message.edit_text(f"Итого: ")

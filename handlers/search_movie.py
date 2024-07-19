@@ -1,14 +1,12 @@
-from aiogram import types
+from aiogram.enums import ParseMode
 from aiogram import Router, F
-from aiogram.filters import StateFilter
+from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
-from utils import power_kb
+from utils import *
 from api.controller import api_controller
 from states.for_start_hand import Keyword
-import json
-
 from difflib import SequenceMatcher
-
+from keybords.cmd_favorite.favorite_inline import LikeCallback
 
 route = Router()
 
@@ -51,36 +49,45 @@ async def film_info(message: types.Message, state: FSMContext):
 
         movie_index = max(similarity)[1]
         await state.set_data({"selected_movie": for_check[movie_index]})
-        await message.answer(
-            text="постер",
-            reply_markup=power_kb(is_search=True),
-
-        )
-
+        data = await state.get_data()
+        api_control = api_controller.get_similar_film(data['selected_movie'])[0]
+        await message.bot.send_photo(message.from_user.id,
+                                     api_control['posterUrlPreview'],
+                                     caption=api_control['nameRu'], reply_markup=power_kb(is_search=True))
         await state.set_state(state=None)
     else:
         await message.answer("Пожалуйста, скопируйте текст и попробуйте еще раз!")
 
 
+@route.callback_query(StateFilter(None), LikeCallback.filter())
+async def like_query_handler(callback: types.CallbackQuery, callback_data: LikeCallback, state: FSMContext):
+    is_liked = not callback_data.is_liked
+    is_search = callback_data.is_search
+    # запрос к бд -> добавление или удаление записи (пользователь - фильм - нравится)
+    await callback.message.edit_reply_markup(reply_markup=power_kb(is_liked=is_liked, is_search=is_search))
+
+
 @route.callback_query(StateFilter(None), F.data)
 async def callbacks_cmd_search_movie(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
+    api_control = api_controller.get_similar_film(data['selected_movie'])
     if callback.data == "full_info":
+        # await callback.message.answer(
+        #     text=f"Полная информация о фильме: \n\n {json.dumps(api_control, indent=4)}"
+        # )
         await callback.message.answer(
-            text=f"Полная информация о фильме: \n\n {json.dumps(api_controller.get_similar_film(data['selected_movie']), indent=4)}"
+            text=f"Полная информация о фильме: \n\n{print_film_info(api_control[0])}"
         )
     elif callback.data == "trailers":
-        await callback.message.answer(
-            text=f"Трейлеры: \n\n {json.dumps(api_controller.get_film_trailer(api_controller.get_similar_film(data['selected_movie'])))}"
-        )
-    elif callback.data == "like":
-        await callback.message.edit_reply_markup(power_kb())
-    await callback.answer()
+        # await callback.message.answer(
+        #     text=f"Трейлеры: \n\n {json.dumps(api_controller.get_film_trailer(api_control[0]['kinopoiskId']))}"
+        # )
 
-# def wait():
-#     movie_index = max(similarity)[1]
-#     await message.answer(
-#             text=f"Полная информация о фильме: \n\n {json.dumps(api_controller.get_similar_film(for_check[movie_index]),indent=4)}",
-#             reply_markup=power_kb(is_search=True),
-#
-#         )
+        await callback.message.answer(
+            text=f"<b>Трейлеры:</b> \n{print_film_trailers(api_controller.get_film_trailer(api_control[0]['kinopoiskId']))}", parse_mode=ParseMode.HTML
+        )
+
+        # await callback.message.answer(
+        #     text=f"Трейлеры: \n\n {api_controller.get_film_trailer(api_control[0]['kinopoiskId'])}"
+        # )
+    await callback.answer()
