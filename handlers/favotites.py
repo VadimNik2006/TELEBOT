@@ -17,7 +17,7 @@ route = Router()
 
 
 @route.message(Command("favorites"))
-async def cmd_start(message: types.Message):
+async def cmd_favorites(message: types.Message):
     content = Text(
         "Привет, ",
         Bold(message.from_user.username)
