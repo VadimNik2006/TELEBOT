@@ -1,9 +1,12 @@
 import sqlalchemy as db
-from sqlalchemy import Column, Integer, String, BigInteger, select, delete
+from sqlalchemy import Column, Integer, BigInteger, DateTime, select, delete
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from utils import singleton, format_time
+import config_reader
 
 
+@singleton
 class DB_Controller:
 
     def __init__(self, db_name):
@@ -25,7 +28,7 @@ class DB_Controller:
         id = Column(Integer, primary_key=True)
         user_id = Column(BigInteger, nullable=False)
         film_id = Column(BigInteger, nullable=False)
-        date = Column(Integer, nullable=False)
+        date = Column(DateTime, nullable=False, default=format_time)
 
     def create_tables(self):
         self.Base.metadata.create_all(self.engine)
@@ -41,21 +44,23 @@ class DB_Controller:
                 session.add(new_fav)
             session.commit()
 
-    def toggle_history(self, user_id, film_id, date):
+    def add_history(self, user_id, film_id):
         with self.session.begin() as session:
-            query = select(self.History.__table__).where(self.History.user_id == user_id, self.History.film_id == film_id, self.History.date == date)
-            favs = session.execute(query).mappings().fetchall()
-            if favs:
-                session.execute(delete(self.History.__table__).where(self.History.user_id == user_id, self.History.film_id == film_id, self.History.date == date))
-            else:
-                new_fav = self.History(user_id=user_id, film_id=film_id, date=date)
-                session.add(new_fav)
+            new_fav = self.History(user_id=user_id, film_id=film_id)
+            session.add(new_fav)
             session.commit()
 
-    # def get_all_favs(self):
-    #     with self.session.begin() as session:
-    #         return session.execute(select(self.Favorite.__table__)).mappings().fetchall()
-
-    def get_all_favs(self, cls):
+    def get_all_records(self, cls):
         with self.session.begin() as session:
             return session.execute(select(cls.__table__)).mappings().fetchall()
+
+    def get_all_faves(self):
+        return self.get_all_records(self.Favorite)
+
+    def get_all_history(self):
+        res = self.get_all_records(self.History)
+        return res
+
+
+db_controller = DB_Controller(db_name=config_reader.config.db_name)
+db_controller.create_tables()

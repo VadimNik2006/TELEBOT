@@ -4,9 +4,11 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command, StateFilter
 from handlers.help import send_help_message
+from database.db_controller import db_controller
 from keybords.cmd_start.start_inline import create_start_kb, MenuCallback
 from messages import messages
-from states.for_start_hand import Keyword
+from states.for_search_movie_hand import Keyword
+# from states.for_favorite_hand import Keyword2
 from typing import Union
 
 route = Router()
@@ -47,6 +49,8 @@ async def call_command(update: Union[types.CallbackQuery, types.Message], state:
         await message.answer("Введите ключевое слово в названии фильма")
         await state.set_state(Keyword.wait_from_similar)
     elif command == "history":
-        await message.edit_text(f"Итого: ")
+        await message.answer(f"datas = {db_controller.get_all_history()}")
+        # await message.edit_text(f"Итого: ")
     elif command == "favorite":
-        await message.edit_text(f"Итого: ")
+        pass
+        # await state.set_state(Keyword2.add_to_fav)
