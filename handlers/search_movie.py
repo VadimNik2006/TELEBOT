@@ -21,6 +21,7 @@ async def similar_chosen(message: types.Message, state: FSMContext):
 
     similar_list = list(
         map(lambda x: films[films.index(x)]['nameRu'], films))
+    await state.update_data({"similar_list": similar_list})
     for_print = ""
     for num, val in enumerate(similar_list):
         for_print += f"\n{num + 1}. {val}"
@@ -42,8 +43,8 @@ async def film_info(message: types.Message, state: FSMContext):
     for_check = (await state.get_data())["movie_vars"]
     user_message = message.text.lower()
     similarity = list()
-    flag = False
 
+    # flag = False
     # check2 = ""
     # for sym in user_message:
     #     if sym.isalpha() or sym.isdigit():
@@ -63,12 +64,17 @@ async def film_info(message: types.Message, state: FSMContext):
         sim = SequenceMatcher(None, elem, user_message).ratio()
         if sim > 0.9:
             similarity.append((sim, index))
-
-
+    get_similar = (await state.get_data())["similar_list"]
+    # print(for_check)            ['мой хатико', 'хатико: самый верный друг', 'история хатико']
+    # print(get_similar)          ['Мой Хатико', 'Хатико: Самый верный друг', 'История Хатико']
+    # print(similarity)           [(1.0, 0)]
     if similarity:
-
         movie_index = max(similarity)[1]
-        await state.update_data({"selected_movie": for_check[movie_index]})
+        api_control = api_controller.get_similar_film(for_check[movie_index])[0]
+        for i in api_control["nameRu"]:
+            if i == for_check[movie_index]:
+                await state.update_data({"true": i})
+        await state.update_data({"selected_movie": for_check[movie_index]})  # "мой хатико"
         # data = await state.get_data()
 
         keyword = message.text.lower()
@@ -76,12 +82,13 @@ async def film_info(message: types.Message, state: FSMContext):
 
         similar_list = list(
             map(lambda x: films[films.index(x)]['nameRu'].lower(), films))
-        print(similar_list)
 
-        if keyword in similar_list:
+        # print(similar_list)
+
+        # if keyword in similar_list:
 
 
-            api_control = api_controller.get_similar_film(for_check[movie_index])[0]
+
 
         # print(api_control)
 
