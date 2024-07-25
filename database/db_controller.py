@@ -36,8 +36,8 @@ class DB_Controller:
     def toggle_favorite(self, user_id, film_id):
         with self.session.begin() as session:
             query = select(self.Favorite.__table__).where(self.Favorite.user_id == user_id, self.Favorite.film_id == film_id)
-            favs = session.execute(query).mappings().fetchall()
-            if favs:
+            faves = session.execute(query).mappings().fetchall()
+            if faves:
                 session.execute(delete(self.Favorite.__table__).where(self.Favorite.user_id == user_id, self.Favorite.film_id == film_id))
             else:
                 new_fav = self.Favorite(user_id=user_id, film_id=film_id)
@@ -50,17 +50,17 @@ class DB_Controller:
             session.add(new_fav)
             session.commit()
 
-    def get_all_records(self, cls):
+    def get_all_records(self, table):
         with self.session.begin() as session:
-            return session.execute(select(cls.__table__)).mappings().fetchall()
+            data = session.execute(select(table.__table__)).mappings().fetchall()
+            return data
 
     def get_all_faves(self):
         return self.get_all_records(self.Favorite)
 
     def get_all_history(self):
-        res = self.get_all_records(self.History)
-        return res
-
+        data = self.get_all_records(self.History)
+        return data
 
 db_controller = DB_Controller(db_name=config_reader.config.db_name)
 db_controller.create_tables()

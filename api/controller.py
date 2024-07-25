@@ -22,5 +22,10 @@ class APIController:
             f"https://kinopoiskapiunofficial.tech/api/v2.2/films/{film_id}/videos").text)
         return response["items"]
 
+    def get_film_name_from_id(self, film_id):
+        response = json.loads(self.ses.get(
+            f"https://kinopoiskapiunofficial.tech/api/v2.2/films/{film_id}").text)
+        return response["nameRu"]
+
 
 api_controller = APIController(api_key=config_reader.config.api_key)
