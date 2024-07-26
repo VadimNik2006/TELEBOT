@@ -48,9 +48,9 @@ async def call_command(update: Union[types.CallbackQuery, types.Message], state:
     elif command == "search_movie":
         await message.answer("Введите ключевое слово в названии фильма")
         await state.set_state(Keyword.wait_from_similar)
-    elif command == "history":
-        await message.answer(f"datas = {db_controller.get_all_history()}")
-        # await message.edit_text(f"Итого: ")
-    elif command == "favorite":
-        pass
+    # elif command == "history":
+    #     await message.answer(f"datas = {db_controller.get_all_history()}")
+    #     # await message.edit_text(f"Итого: ")
+    # elif command == "favorite":
+    #     pass
         # await state.set_state(Keyword2.add_to_fav)

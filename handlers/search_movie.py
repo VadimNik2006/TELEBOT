@@ -61,13 +61,7 @@ async def film_info(message: types.Message, state: FSMContext):
         data = (await state.get_data())["selected_movie"][0]
         user_id = message.from_user.id
         film_id = api_control[data]["kinopoiskId"]
-        pprint(db_controller.get_all_history())
-        for index, elem in enumerate(db_controller.get_all_history()):
-            for key, val in elem.items():
-                if key == "film_id" and film_id == key:
-                    db_controller.get_all_history()[index]['film_id'] = history_db(user_id=user_id, film_id=film_id)
-                else:
-                    history_db(user_id=user_id, film_id=film_id)
+        history_db(user_id=user_id, film_id=film_id)
         await message.bot.send_photo(user_id,
                                      api_control[data]['posterUrlPreview'],
                                      caption=api_control[data]['nameRu'], reply_markup=power_kb(is_search=True, id=film_id))
@@ -78,8 +72,15 @@ async def film_info(message: types.Message, state: FSMContext):
 
 @route.callback_query(StateFilter(None), LikeCallback.filter())
 async def like_query_handler(callback: types.CallbackQuery, callback_data: LikeCallback, state: FSMContext):
-    data = (await state.get_data())["selected_movie"][0]
-    api_control = (await state.get_data())["api_con"]
+    # data = (await state.get_data())["selected_movie"][0]
+    #
+    # api_control = (await state.get_data())["api_con"]
+    api_control = api_controller.get_similar_film(callback.message.caption.lower())
+    data = 0
+    for index, elem in enumerate(api_control):
+        if elem["nameRu"].lower() == callback.message.caption.lower():
+            data = index
+            break
     is_liked = not callback_data.is_liked
     is_search = callback_data.is_search
     id_info = callback_data.id_info
@@ -98,8 +99,7 @@ async def callbacks_cmd_search_movie(callback: types.CallbackQuery, callback_dat
         if elem["nameRu"].lower() == callback.message.caption.lower():
             data = index
             break
-            # await state.set_data({"selected_movie": (index, elem)})
-    # data = (await state.get_data())["selected_movie"][0]
+
     action = callback_data.action
     id_info = callback_data.id
     if action == "film_info":

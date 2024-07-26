@@ -1,9 +1,11 @@
 import sqlalchemy as db
-from sqlalchemy import Column, Integer, BigInteger, DateTime, select, delete
+from sqlalchemy import Column, Integer, BigInteger, DateTime, delete, update
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from utils import singleton, format_time
+from sqlalchemy.future import select
 import config_reader
+from datetime import datetime, timedelta
 
 
 @singleton
@@ -35,32 +37,48 @@ class DB_Controller:
 
     def toggle_favorite(self, user_id, film_id):
         with self.session.begin() as session:
-            query = select(self.Favorite.__table__).where(self.Favorite.user_id == user_id, self.Favorite.film_id == film_id)
+            query = select(self.Favorite.__table__).where(self.Favorite.user_id == user_id,
+                                                          self.Favorite.film_id == film_id)
             faves = session.execute(query).mappings().fetchall()
             if faves:
-                session.execute(delete(self.Favorite.__table__).where(self.Favorite.user_id == user_id, self.Favorite.film_id == film_id))
+                session.execute(delete(self.Favorite.__table__).where(self.Favorite.user_id == user_id,
+                                                                      self.Favorite.film_id == film_id))
             else:
                 new_fav = self.Favorite(user_id=user_id, film_id=film_id)
                 session.add(new_fav)
             session.commit()
 
     def add_history(self, user_id, film_id):
+        # current_time = format_time()
         with self.session.begin() as session:
-            new_fav = self.History(user_id=user_id, film_id=film_id)
-            session.add(new_fav)
+            now = datetime.now()
+            start_of_day = datetime(now.year, now.month, now.day)
+            end_of_day = start_of_day + timedelta(days=1)
+            query = select(self.History).where(self.History.user_id == user_id,
+                                               self.History.film_id == film_id,
+                                               self.History.date.between(start_of_day, end_of_day))
+            hist = session.execute(query).all()
+            if hist:
+                stmt = hist[0][0]
+                stmt.date = format_time()
+            else:
+                new_fav = self.History(user_id=user_id, film_id=film_id)
+                session.add(new_fav)
             session.commit()
 
-    def get_all_records(self, table):
-        with self.session.begin() as session:
-            data = session.execute(select(table.__table__)).mappings().fetchall()
-            return data
+    # def get_all_records(self, table):
 
     def get_all_faves(self):
-        return self.get_all_records(self.Favorite)
+        with self.session.begin() as session:
+            data = session.execute(select(self.Favorite.__table__)).mappings().fetchall()
+            return data
 
     def get_all_history(self):
-        data = self.get_all_records(self.History)
-        return data
+        with self.session.begin() as session:
+            data = session.execute(
+                select(self.History.__table__).order_by(self.History.date.desc())).mappings().fetchall()
+            return data
+
 
 db_controller = DB_Controller(db_name=config_reader.config.db_name)
 db_controller.create_tables()
