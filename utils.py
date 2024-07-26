@@ -74,3 +74,14 @@ def print_history(history_data, api_controller):
 
         text += "\n"
     return text
+
+
+def print_for_favorite_buttons(favorite_data, api_controller):
+    text = "\n\n"
+    for i in favorite_data:
+        for key, value in i.items():
+            if key == "film_id":
+                text += f'Название фильма: "{api_controller.get_film_name_from_id(value)}"\n'
+
+        text += "\n"
+    return text

@@ -40,7 +40,6 @@ async def similar_chosen(message: types.Message, state: FSMContext):
 
 @route.message(Keyword.wait_film)
 async def film_info(message: types.Message, state: FSMContext):
-
     for_check = (await state.get_data())["movie_vars"]
     user_message = message.text.lower()
     similarity = list()
@@ -64,7 +63,10 @@ async def film_info(message: types.Message, state: FSMContext):
         history_db(user_id=user_id, film_id=film_id)
         await message.bot.send_photo(user_id,
                                      api_control[data]['posterUrlPreview'],
-                                     caption=api_control[data]['nameRu'], reply_markup=power_kb(is_search=True, id=film_id))
+                                     caption=api_control[data]['nameRu'],
+                                     reply_markup=power_kb(is_search=True,
+                                                           is_liked=db_controller.favorite_datas_view(user_id, film_id),
+                                                           id=film_id))
         await state.set_state(state=None)
     else:
         await message.answer("Пожалуйста, скопируйте текст и попробуйте еще раз!")
@@ -72,21 +74,20 @@ async def film_info(message: types.Message, state: FSMContext):
 
 @route.callback_query(StateFilter(None), LikeCallback.filter())
 async def like_query_handler(callback: types.CallbackQuery, callback_data: LikeCallback, state: FSMContext):
-    # data = (await state.get_data())["selected_movie"][0]
-    #
-    # api_control = (await state.get_data())["api_con"]
-    api_control = api_controller.get_similar_film(callback.message.caption.lower())
-    data = 0
-    for index, elem in enumerate(api_control):
-        if elem["nameRu"].lower() == callback.message.caption.lower():
-            data = index
-            break
+    # api_control = api_controller.get_similar_film(callback.message.caption.lower())
+    # data = 0
+    # for index, elem in enumerate(api_control):
+    #     if elem["nameRu"].lower() == callback.message.caption.lower():
+    #         data = index
+    #         break
     is_liked = not callback_data.is_liked
     is_search = callback_data.is_search
     id_info = callback_data.id_info
-    if is_liked:
-        favorite_db(user_id=callback.message.from_user.id, film_id=api_control[data]["kinopoiskId"])
-
+    # if db_controller.favorite_datas_view(user_id=callback.message.from_user.id,
+    #                                      film_id=api_control[data]["kinopoiskId"]):
+    favorite_db(user_id=callback.message.from_user.id, film_id=id_info, add=is_liked)
+    # else:
+    #     favorite_db(user_id=callback.message.from_user.id, film_id=api_control[data]["kinopoiskId"], add=is_liked)
     await callback.message.edit_reply_markup(reply_markup=power_kb(is_liked=is_liked, is_search=is_search, id=id_info))
     await state.set_state(state=None)
 

@@ -32,7 +32,7 @@ async def callbacks_command_start(callback: types.CallbackQuery, callback_data: 
     await call_command(callback, state, callback_data.section)
 
 
-@route.message(Command(commands=["help", "search_movie", "favorite"]))
+@route.message(Command(commands=["help", "search_movie"]))
 async def base_commands_handler(message: types.Message, state: FSMContext):
     await call_command(message, state, message.text[1:])
 

@@ -35,15 +35,25 @@ class DB_Controller:
     def create_tables(self):
         self.Base.metadata.create_all(self.engine)
 
-    def toggle_favorite(self, user_id, film_id):
+    def favorite_datas_view(self, user_id, film_id):
         with self.session.begin() as session:
             query = select(self.Favorite.__table__).where(self.Favorite.user_id == user_id,
                                                           self.Favorite.film_id == film_id)
             faves = session.execute(query).mappings().fetchall()
+            print(faves)
             if faves:
+                return True
+            return False
+
+    def toggle_favorite(self, user_id, film_id, add=True):
+        with self.session.begin() as session:
+            query = select(self.Favorite.__table__).where(self.Favorite.user_id == user_id,
+                                                          self.Favorite.film_id == film_id)
+            faves = session.execute(query).mappings().fetchall()
+            if faves and not add:
                 session.execute(delete(self.Favorite.__table__).where(self.Favorite.user_id == user_id,
                                                                       self.Favorite.film_id == film_id))
-            else:
+            elif add and not faves:
                 new_fav = self.Favorite(user_id=user_id, film_id=film_id)
                 session.add(new_fav)
             session.commit()
