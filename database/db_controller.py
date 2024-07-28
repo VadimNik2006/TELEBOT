@@ -40,9 +40,12 @@ class DB_Controller:
             query = select(self.Favorite.__table__).where(self.Favorite.user_id == user_id,
                                                           self.Favorite.film_id == film_id)
             faves = session.execute(query).mappings().fetchall()
-            print(faves)
-            if faves:
+            # faves = session.execute(query).all()
+            print(self.toggle_favorite(user_id, film_id))
+            if len(faves) != 0:
+                print("in true")
                 return True
+            print("in false")
             return False
 
     def toggle_favorite(self, user_id, film_id, add=True):
@@ -88,6 +91,7 @@ class DB_Controller:
             data = session.execute(
                 select(self.History.__table__).order_by(self.History.date.desc())).mappings().fetchall()
             return data
+
 
 
 db_controller = DB_Controller(db_name=config_reader.config.db_name)

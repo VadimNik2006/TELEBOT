@@ -13,6 +13,7 @@ from keybords.cmd_search_movie.search_inline import FilmCallback
 from database.db_controller import db_controller
 from pprint import pprint
 
+
 route = Router()
 
 
@@ -52,7 +53,7 @@ async def film_info(message: types.Message, state: FSMContext):
     if similarity:
         movie_index = max(similarity)[1]
         api_control = api_controller.get_similar_film(for_check[movie_index])
-        await state.update_data({"api_con": api_control})
+        # await state.update_data({"api_con": api_control})
         for index, elem in enumerate(api_control):
             if elem["nameRu"].lower() == for_check[movie_index]:
                 await state.update_data({"selected_movie": (index, elem)})
@@ -85,7 +86,8 @@ async def like_query_handler(callback: types.CallbackQuery, callback_data: LikeC
     id_info = callback_data.id_info
     # if db_controller.favorite_datas_view(user_id=callback.message.from_user.id,
     #                                      film_id=api_control[data]["kinopoiskId"]):
-    favorite_db(user_id=callback.message.from_user.id, film_id=id_info, add=is_liked)
+    if is_liked:
+        favorite_db(user_id=callback.message.from_user.id, film_id=id_info, add=is_liked)
     # else:
     #     favorite_db(user_id=callback.message.from_user.id, film_id=api_control[data]["kinopoiskId"], add=is_liked)
     await callback.message.edit_reply_markup(reply_markup=power_kb(is_liked=is_liked, is_search=is_search, id=id_info))
