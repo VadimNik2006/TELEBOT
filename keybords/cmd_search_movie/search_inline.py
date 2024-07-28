@@ -25,6 +25,6 @@ def search_buttons(id):
 #     return buttons
 
 
-def create_search_kb():
-    keyboard = types.InlineKeyboardMarkup(inline_keyboard=search_buttons())
-    return keyboard
+# def create_search_kb():
+#     keyboard = types.InlineKeyboardMarkup(inline_keyboard=search_buttons())
+#     return keyboard

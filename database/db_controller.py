@@ -40,15 +40,11 @@ class DB_Controller:
             query = select(self.Favorite.__table__).where(self.Favorite.user_id == user_id,
                                                           self.Favorite.film_id == film_id)
             faves = session.execute(query).mappings().fetchall()
-            # faves = session.execute(query).all()
-            print(self.toggle_favorite(user_id, film_id))
-            if len(faves) != 0:
-                print("in true")
+            if faves:
                 return True
-            print("in false")
             return False
 
-    def toggle_favorite(self, user_id, film_id, add=True):
+    def toggle_favorite(self, user_id, film_id, add=False):
         with self.session.begin() as session:
             query = select(self.Favorite.__table__).where(self.Favorite.user_id == user_id,
                                                           self.Favorite.film_id == film_id)
@@ -62,7 +58,6 @@ class DB_Controller:
             session.commit()
 
     def add_history(self, user_id, film_id):
-        # current_time = format_time()
         with self.session.begin() as session:
             now = datetime.now()
             start_of_day = datetime(now.year, now.month, now.day)
@@ -75,23 +70,21 @@ class DB_Controller:
                 stmt = hist[0][0]
                 stmt.date = format_time()
             else:
-                new_fav = self.History(user_id=user_id, film_id=film_id)
-                session.add(new_fav)
+                new_hist = self.History(user_id=user_id, film_id=film_id)
+                session.add(new_hist)
             session.commit()
 
-    # def get_all_records(self, table):
-
-    def get_all_faves(self):
+    def get_all_faves(self, user_id):
         with self.session.begin() as session:
-            data = session.execute(select(self.Favorite.__table__)).mappings().fetchall()
-            return data
+            query = select(self.Favorite.__table__).where(self.Favorite.user_id == user_id)
+            faves = session.execute(query).mappings().fetchall()
+            return faves
 
-    def get_all_history(self):
+    def get_all_history(self, user_id):
         with self.session.begin() as session:
-            data = session.execute(
-                select(self.History.__table__).order_by(self.History.date.desc())).mappings().fetchall()
-            return data
-
+            query = select(self.History.__table__).where(self.History.user_id == user_id)
+            hist = session.execute(query).mappings().fetchall()
+            return hist
 
 
 db_controller = DB_Controller(db_name=config_reader.config.db_name)

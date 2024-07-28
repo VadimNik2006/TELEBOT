@@ -1,13 +1,15 @@
-from keybords.cmd_search_movie.search_inline import search_buttons
-from keybords.cmd_favorite.favorite_inline import favorite_buttons
 import functools
 from datetime import datetime
 from time import time
 from aiogram import types
 from pprint import pprint
 
+from database.db_controller import db_controller
+
 
 def power_kb(is_search=False, is_liked=False, id=None):
+    from keybords.cmd_search_movie.search_inline import search_buttons
+    from keybords.cmd_favorite.favorite_inline import favorite_buttons
     buttons = [*favorite_buttons(is_search, is_liked, id)]
     if is_search:
         buttons.insert(0, *search_buttons(id=id))
@@ -85,3 +87,12 @@ def print_for_favorite_buttons(favorite_data, api_controller):
 
         text += "\n"
     return text
+
+
+async def send_photo_with_bot(message: types.Message, user_id, api_control, data, film_id):
+    await message.bot.send_photo(user_id,
+                                 api_control[data]['posterUrlPreview'],
+                                 caption=api_control[data]['nameRu'],
+                                 reply_markup=power_kb(is_search=True,
+                                                       is_liked=db_controller.favorite_datas_view(user_id, film_id),
+                                                       id=film_id))

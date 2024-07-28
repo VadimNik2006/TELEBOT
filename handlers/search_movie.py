@@ -53,7 +53,6 @@ async def film_info(message: types.Message, state: FSMContext):
     if similarity:
         movie_index = max(similarity)[1]
         api_control = api_controller.get_similar_film(for_check[movie_index])
-        # await state.update_data({"api_con": api_control})
         for index, elem in enumerate(api_control):
             if elem["nameRu"].lower() == for_check[movie_index]:
                 await state.update_data({"selected_movie": (index, elem)})
@@ -62,12 +61,14 @@ async def film_info(message: types.Message, state: FSMContext):
         user_id = message.from_user.id
         film_id = api_control[data]["kinopoiskId"]
         history_db(user_id=user_id, film_id=film_id)
-        await message.bot.send_photo(user_id,
-                                     api_control[data]['posterUrlPreview'],
-                                     caption=api_control[data]['nameRu'],
-                                     reply_markup=power_kb(is_search=True,
-                                                           is_liked=db_controller.favorite_datas_view(user_id, film_id),
-                                                           id=film_id))
+        print(user_id, film_id)
+        await send_photo_with_bot(message=message, film_id=film_id, user_id=user_id, data=data, api_control=api_control)
+        # await message.bot.send_photo(user_id,
+        #                              api_control[data]['posterUrlPreview'],
+        #                              caption=api_control[data]['nameRu'],
+        #                              reply_markup=power_kb(is_search=True,
+        #                                                    is_liked=db_controller.favorite_datas_view(user_id, film_id),
+        #                                                    id=film_id))
         await state.set_state(state=None)
     else:
         await message.answer("Пожалуйста, скопируйте текст и попробуйте еще раз!")
@@ -75,21 +76,10 @@ async def film_info(message: types.Message, state: FSMContext):
 
 @route.callback_query(StateFilter(None), LikeCallback.filter())
 async def like_query_handler(callback: types.CallbackQuery, callback_data: LikeCallback, state: FSMContext):
-    # api_control = api_controller.get_similar_film(callback.message.caption.lower())
-    # data = 0
-    # for index, elem in enumerate(api_control):
-    #     if elem["nameRu"].lower() == callback.message.caption.lower():
-    #         data = index
-    #         break
     is_liked = not callback_data.is_liked
     is_search = callback_data.is_search
     id_info = callback_data.id_info
-    # if db_controller.favorite_datas_view(user_id=callback.message.from_user.id,
-    #                                      film_id=api_control[data]["kinopoiskId"]):
-    if is_liked:
-        favorite_db(user_id=callback.message.from_user.id, film_id=id_info, add=is_liked)
-    # else:
-    #     favorite_db(user_id=callback.message.from_user.id, film_id=api_control[data]["kinopoiskId"], add=is_liked)
+    favorite_db(user_id=callback.from_user.id, film_id=id_info, add=is_liked)
     await callback.message.edit_reply_markup(reply_markup=power_kb(is_liked=is_liked, is_search=is_search, id=id_info))
     await state.set_state(state=None)
 

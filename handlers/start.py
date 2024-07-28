@@ -7,9 +7,9 @@ from handlers.help import send_help_message
 from keybords.cmd_start.start_inline import create_start_kb, MenuCallback
 from messages import messages
 from states.for_search_movie_hand import Keyword
-from handlers.favorite import cmd_favorite
-from handlers.history import cmd_history
 from typing import Union
+from handlers.favorite import send_favorite
+from handlers.history import send_history
 
 
 route = Router()
@@ -49,11 +49,7 @@ async def call_command(update: Union[types.CallbackQuery, types.Message], state:
     elif command == "search_movie":
         await message.answer("Введите ключевое слово в названии фильма")
         await state.set_state(Keyword.wait_from_similar)
-    elif command == "history":
-        await cmd_history
-    #     await message.answer(f"datas = {db_controller.get_all_history()}")
-    #     # await message.edit_text(f"Итого: ")
     elif command == "favorite":
-        await cmd_favorite
-    #     pass
-        # await state.set_state(Keyword2.add_to_fav)
+        await send_favorite(message)
+    elif command == "history":
+        await send_history(message)

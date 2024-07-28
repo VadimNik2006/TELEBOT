@@ -8,4 +8,4 @@ from handlers import *
 bot = Bot(token=config.bot_token.get_secret_value())
 # logging.basicConfig(level=logging.INFO)
 dp = Dispatcher(storage=MemoryStorage())
-dp.include_routers(start_route, history_route, movie_search_route, help_route, favorite_route)
+dp.include_routers(start_route, history_route, favorite_route, movie_search_route, help_route)
