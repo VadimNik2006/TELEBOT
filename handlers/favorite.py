@@ -21,11 +21,12 @@ def favorite_db(user_id, film_id, add=True):
 
 
 async def send_favorite(message: types.Message):
+    favorite_data = db_controller.get_all_faves(user_id=message.from_user.id)
     await message.answer(
-        text=f"<b>Избранные фильмы:</b> {print_for_favorite_buttons(favorite_data=db_controller.get_all_faves(user_id=message.from_user.id), api_controller=api_controller)}",
+        text=f"<b>Избранные фильмы:</b> {print_for_favorite_buttons(favorite_data=favorite_data, api_controller=api_controller)}",
         parse_mode=ParseMode.HTML,
         reply_markup=favorite_list_buttons(favorite_data=db_controller.get_all_faves(user_id=message.from_user.id),
-                                           api_controller=api_controller, row_size=5))
+                                           api_controller=api_controller, favorite_size=len(favorite_data)))
 
 
 @route.message(Command("favorite"))
@@ -38,6 +39,11 @@ async def cmd_favorite(message: types.Message, state: FSMContext):
 async def favorite_query_handler(callback: types.CallbackQuery, callback_data: FavoriteCallback, state: FSMContext):
     film_name = callback_data.film_name
     film_id = callback_data.film_id
-    if callback.message ==
-        await send_photo_with_bot(message=callback.message, user_id=callback.message.from_user.id, film_id=film_id, api_control=api_controller.get_similar_fim(film_name), data=)
+    api_control = api_controller.get_similar_fim(film_name)
+    my_index = 0
+    for index, elem in enumerate(api_control):
+        if elem["nameRu"].lower() == api_control.lower():
+            my_index += index
+    if callback_data:
+        await send_photo_with_bot(message=callback.message, user_id=callback.message.from_user.id, film_id=film_id, api_control=api_control, data=my_index)
         await state.set_state(state=None)

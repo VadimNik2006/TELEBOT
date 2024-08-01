@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.filters.callback_data import CallbackData
 from aiogram.utils.keyboard import InlineKeyboardBuilder
-from utils import send_photo_with_bot
+# from utils import send_photo_with_bot
 
 
 # from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -32,7 +32,7 @@ def favorite_buttons(is_search: bool = False, is_liked: bool = False, id: int = 
     return buttons
 
 
-def favorite_list_buttons(favorite_data, api_controller, row_size=5, page=1):
+def favorite_list_buttons(favorite_data, api_controller, favorite_size=None, page=1):
     keyboard = InlineKeyboardBuilder()
 
     # start = (page - 1) * row_size
@@ -41,7 +41,7 @@ def favorite_list_buttons(favorite_data, api_controller, row_size=5, page=1):
     for item in favorite_data:
         film_name = api_controller.get_film_name_from_id(item["film_id"])
         print(film_name)
-        if index != row_size - 1:
+        if index != favorite_size:
             keyboard.add(types.InlineKeyboardButton(text=film_name, callback_data=FavoriteCallback(film_name=film_name,
                                                                                                    film_id=item[
                                                                                                        "film_id"]).pack()))

@@ -4,7 +4,7 @@ from time import time
 from aiogram import types
 from pprint import pprint
 
-from database.db_controller import db_controller
+# from database.db_controller import db_controller
 
 
 def power_kb(is_search=False, is_liked=False, id=None):
@@ -89,10 +89,10 @@ def print_for_favorite_buttons(favorite_data, api_controller):
     return text
 
 
-async def send_photo_with_bot(message: types.Message, user_id, api_control, data, film_id):
+async def send_photo_with_bot(message: types.Message, user_id, api_control, data, film_id, db_con=None):
     await message.bot.send_photo(user_id,
                                  api_control[data]['posterUrlPreview'],
                                  caption=api_control[data]['nameRu'],
                                  reply_markup=power_kb(is_search=True,
-                                                       is_liked=db_controller.favorite_datas_view(user_id, film_id),
+                                                       is_liked=db_con,
                                                        id=film_id))
