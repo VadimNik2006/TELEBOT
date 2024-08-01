@@ -15,9 +15,7 @@ class LikeCallback(CallbackData, prefix="like"):
 
 
 class FavoriteCallback(CallbackData, prefix="fav"):
-    film_name: str
     film_id: int
-    # action: str
 
 
 def favorite_buttons(is_search: bool = False, is_liked: bool = False, id: int = None):
@@ -32,21 +30,45 @@ def favorite_buttons(is_search: bool = False, is_liked: bool = False, id: int = 
     return buttons
 
 
-def favorite_list_buttons(favorite_data, api_controller, favorite_size=None, page=1):
+def favorite_list_buttons(favorite_data, api_controller, favorite_size=None):
     keyboard = InlineKeyboardBuilder()
+    print(favorite_size)
+    for index, item in enumerate(favorite_data):
+        cur_pages = 0
+        film_name = api_controller.get_film_name_from_id(item["film_id"])
+        print(film_name)
+        keyboard.add(types.InlineKeyboardButton(text=film_name, callback_data=FavoriteCallback(film_id=item[
+                                                                                            "film_id"]).pack()))
+        # else:
+        #     cur_pages += 1
+
+    return keyboard.as_markup()
 
     # start = (page - 1) * row_size
     # end = page * row_size
-    index = 0
-    for item in favorite_data:
-        film_name = api_controller.get_film_name_from_id(item["film_id"])
-        print(film_name)
-        if index != favorite_size:
-            keyboard.add(types.InlineKeyboardButton(text=film_name, callback_data=FavoriteCallback(film_name=film_name,
-                                                                                                   film_id=item[
-                                                                                                       "film_id"]).pack()))
-            index += 1
-    return keyboard.as_markup()
+
+    # index = 0
+    # for item in favorite_data:
+    #     film_name = api_controller.get_film_name_from_id(item["film_id"])
+    #     print(film_name)
+    #     if index != favorite_size:
+    #         keyboard.add(types.InlineKeyboardButton(text=film_name, callback_data=FavoriteCallback(film_name=film_name,
+    #                                                                                                film_id=item[
+    #                                                                                                    "film_id"]).pack()))
+    #         index += 1
+    # return keyboard.as_markup()
+
+
+
+
+
+
+
+
+
+
+
+
 
 # # Определение CallbackData для обработки нажатий кнопок
 # callback_data = CallbackData("button", "action")
