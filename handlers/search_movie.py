@@ -7,11 +7,9 @@ from api.controller import api_controller
 from states.for_search_movie_hand import Keyword
 from handlers.history import history_db
 from handlers.favorite import favorite_db
-from difflib import SequenceMatcher
 from keybords.cmd_favorite.favorite_inline import LikeCallback
 from keybords.cmd_search_movie.search_inline import FilmCallback
 from database.db_controller import db_controller
-import re
 from pprint import pprint
 
 
@@ -21,7 +19,7 @@ route = Router()
 @route.message(Keyword.wait_from_similar)
 async def similar_chosen(message: types.Message, state: FSMContext):
     keyword = message.text.lower()
-    films = api_controller.get_similar_film(keyword.split())
+    films = api_controller.get_similar_film(keyword)
     similar_list = list(
         map(lambda x: films[films.index(x)]['nameRu'], films))
     await state.update_data({"similar_list": similar_list})
@@ -30,10 +28,8 @@ async def similar_chosen(message: types.Message, state: FSMContext):
         for_print += f"\n{num + 1}. {val}"
     if for_print:
         await message.answer(
-            text=f"Найдены следующие фильмы:\n {for_print} \n\nСкопируй нужное название фильма и отправь его мне"
+            text=f"Найдены следующие фильмы:\n {for_print} \n\nОтправьте цифру/число номера интересующего Вас фильма"
         )
-        print(f"similar_l: {similar_list}")
-        await state.update_data({"movie_vars": [re.sub(r'(\s+[^\w\s](?=\s)|[^\w\s]|\s+(?=\s))', '', val.lower()) for val in similar_list]})
 
         await state.set_state(Keyword.wait_film)
     else:
@@ -42,83 +38,37 @@ async def similar_chosen(message: types.Message, state: FSMContext):
 
 @route.message(Keyword.wait_film)
 async def film_info(message: types.Message, state: FSMContext):
-    # for_check = (await state.get_data())["movie_vars"]
-    # user_message = message.text.lower()
-    # similarity = list()
-    #
-    # for index, elem in enumerate(for_check):
-    #     sim = SequenceMatcher(None, elem, user_message).ratio()
-    #     if sim > 0.9:
-    #         similarity.append((sim, index))
-    #
-    # if similarity:
-    #     movie_index = max(similarity)[1]
-    #     api_control = api_controller.get_similar_film(for_check[movie_index])
-    #     for index, elem in enumerate(api_control):
-    #         if elem["nameRu"].lower() == for_check[movie_index]:
-    #             await state.update_data({"selected_movie": (index, elem)})
-    #
-    #     data = (await state.get_data())["selected_movie"][0]
-    #     user_id = message.from_user.id
-    #     film_id = api_control[data]["kinopoiskId"]
-    #     history_db(user_id=user_id, film_id=film_id)
-    #     print(user_id, film_id)
-    #     await send_photo_with_bot(message=message, film_id=film_id, user_id=user_id, data=data, api_control=api_control)
-    #     # await message.bot.send_photo(user_id,
-    #     #                              api_control[data]['posterUrlPreview'],
-    #     #                              caption=api_control[data]['nameRu'],
-    #     #                              reply_markup=power_kb(is_search=True,
-    #     #                                                    is_liked=db_controller.favorite_datas_view(user_id, film_id),
-    #     #                                                    id=film_id))
-    #     await state.set_state(state=None)
-    # else:
-    #     await message.answer("Пожалуйста, скопируйте текст и попробуйте еще раз!")
+    try:
+        user_message = int(message.text)
+        data = user_message - 1
+        prev_movies = (await state.get_data())['similar_list']
 
-    for_check = (await state.get_data())["movie_vars"]
+        if 0 <= user_message <= len(prev_movies):
 
-    print(f"for_check: {for_check}")
+            api_control = api_controller.get_similar_film(prev_movies[data])
+            store = []
 
-    user_message = re.sub(r'(\s+[^\w\s](?=\s)|[^\w\s]|\s+(?=\s))', '', message.text.lower())
-    print(f"user_message: {user_message}")
+            for index, elem in enumerate(api_control):
+                if elem["nameRu"].lower() == prev_movies[data].lower():
+                    store.extend([index, elem])
 
-    def message_index(user_message):
-        print("in def 'message_index'")
-        for ind, el in enumerate(for_check):
-            similarity = SequenceMatcher(None, el, user_message).ratio()
-            print()
-            print("elem:", el)
-            print("similarity:", similarity)
-            print("len(elem):", len(el))
-            print("len(user_message):", len(user_message))
-            print()
-            if (len(user_message) > 10 and similarity > 0.9) or (len(user_message) <= 10 and similarity >= 0.8):
-                return ind
+            data = store[0]
+            user_id = message.from_user.id
+            film_id = api_control[data]["kinopoiskId"]
+            history_db(user_id=user_id, film_id=film_id)
 
-    my_def = message_index(user_message=user_message)
-    print(f"mes_index: {my_def}")
-    if type(my_def) is int:
-        print("in condition")
-        movie_index = my_def
-        api_control = api_controller.get_similar_film(for_check[movie_index])
-        for index, elem in enumerate(api_control):
-            if elem["nameRu"].lower() == for_check[movie_index]:
-                await state.update_data({"selected_movie": (index, elem)})
-        data = (await state.get_data())["selected_movie"][0]
-        user_id = message.from_user.id
-        film_id = api_control[data]["kinopoiskId"]
-        history_db(user_id=user_id, film_id=film_id)
-        print(user_id, film_id)
-        await send_photo_with_bot(message=message, film_id=film_id, user_id=user_id, data=data, api_control=api_control,
-                                  db_con=db_controller.favorite_datas_view(user_id=user_id, film_id=film_id))
-        # await message.bot.send_photo(user_id,
-        #                              api_control[data]['posterUrlPreview'],
-        #                              caption=api_control[data]['nameRu'],
-        #                              reply_markup=power_kb(is_search=True,
-        #                                                    is_liked=db_controller.favorite_datas_view(user_id, film_id),
-        #                                                    id=film_id))
-        await state.set_state(state=None)
-    else:
-        await message.answer("Пожалуйста, скопируйте текст и попробуйте еще раз!")
+            await send_photo_with_bot(message=message, film_id=film_id, user_id=user_id, data=data,
+                                      api_control=api_control,
+                                      db_con=db_controller.favorite_datas_view(user_id=user_id, film_id=film_id))
+
+            await state.set_state(state=None)
+        else:
+            await message.answer("Ваша цифра/число находится вне диапазона количества фильмов")
+    except ValueError:
+        if isinstance(message.text, str) and message.text.isalpha():
+            await message.answer("Пожалуйста, введите цифру/число, а не строку!")
+        elif not message.text.isalpha():
+            await message.answer("Вы ввели что-то непонятное. Пожалуйста, введите цифру/число!")
 
 
 @route.callback_query(StateFilter(None), LikeCallback.filter())
