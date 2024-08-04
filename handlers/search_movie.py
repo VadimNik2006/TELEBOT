@@ -1,16 +1,16 @@
 from aiogram.enums import ParseMode
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.filters import StateFilter
 from aiogram.fsm.context import FSMContext
-from utils import *
+from aiogram import types
+from utils import send_photo_with_bot, power_kb, print_see_movie, print_film_info, print_film_trailers
 from api.controller import api_controller
 from states.for_search_movie_hand import Keyword
 from handlers.history import history_db
 from handlers.favorite import favorite_db
-from keybords.cmd_favorite.favorite_inline import LikeCallback
-from keybords.cmd_search_movie.search_inline import FilmCallback
+from keyboards.cmd_favorite.favorite_inline import LikeCallback
+from keyboards.cmd_search_movie.search_inline import FilmCallback
 from database.db_controller import db_controller
-from pprint import pprint
 
 
 route = Router()
@@ -44,7 +44,6 @@ async def film_info(message: types.Message, state: FSMContext):
         prev_movies = (await state.get_data())['similar_list']
 
         if 0 <= user_message <= len(prev_movies):
-
             api_control = api_controller.get_similar_film(prev_movies[data])
             store = []
 
@@ -65,7 +64,8 @@ async def film_info(message: types.Message, state: FSMContext):
         else:
             await message.answer("Ваша цифра/число находится вне диапазона количества фильмов")
     except ValueError:
-        if isinstance(message.text, str) and message.text.isalpha():
+        a = [i for i in message.text if i.isalpha()]
+        if isinstance(message.text, str) and any([True for i in a if i.isalpha()]):
             await message.answer("Пожалуйста, введите цифру/число, а не строку!")
         elif not message.text.isalpha():
             await message.answer("Вы ввели что-то непонятное. Пожалуйста, введите цифру/число!")
@@ -94,7 +94,8 @@ async def callbacks_cmd_search_movie(callback: types.CallbackQuery, callback_dat
     id_info = callback_data.id
     if action == "film_info":
         await callback.message.answer(
-            text=f"Полная информация о фильме: \n\n{print_film_info(api_control[data])}"
+            text=f"<b>Полная информация о фильме:</b> \n\n{print_film_info(api_film_info=api_control[data])}",
+            parse_mode=ParseMode.HTML
         )
     elif action == "trailers":
         await callback.message.answer(
@@ -102,6 +103,12 @@ async def callbacks_cmd_search_movie(callback: types.CallbackQuery, callback_dat
                  f"\n\n      {api_control[data]['nameRu']}"
                  f"\n\nТрейлеры:</b>"
                  f"\n{print_film_trailers(api_trailers=api_controller.get_film_trailer(id_info))}",
+            parse_mode=ParseMode.HTML
+        )
+    elif action == "see_movie":
+        await callback.message.answer(
+            text=f"<b>Сайты, на которых можно посмотреть фильм:</b>"
+                 f" \n\n{print_see_movie(api_see_movie=api_controller.see_movie(film_id=id_info))}",
             parse_mode=ParseMode.HTML
         )
     await state.set_state(state=None)

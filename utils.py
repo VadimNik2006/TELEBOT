@@ -2,17 +2,16 @@ import functools
 from datetime import datetime
 from time import time
 from aiogram import types
-from pprint import pprint
-
-# from database.db_controller import db_controller
 
 
 def power_kb(is_search=False, is_liked=False, id=None):
-    from keybords.cmd_search_movie.search_inline import search_buttons
-    from keybords.cmd_favorite.favorite_inline import favorite_buttons
+    from keyboards.cmd_search_movie.search_inline import search_buttons
+    from keyboards.cmd_favorite.favorite_inline import favorite_buttons
     buttons = [*favorite_buttons(is_search, is_liked, id)]
     if is_search:
-        buttons.insert(0, *search_buttons(id=id))
+        res = search_buttons(id=id)
+        for i in range(len(res)):
+            buttons.insert(i, res[i])
     return types.InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
@@ -46,6 +45,18 @@ def print_film_trailers(api_trailers):
         text += f"\n      {key}:\n\n"
         for keys, values in memory_dict[key].items():
             text += f"            {keys}: {values}\n"
+
+    return text
+
+
+def print_see_movie(api_see_movie):
+    memory_dict = dict()
+    for i in range(len(api_see_movie)):
+        memory_dict[f'сайт №{i + 1}'] = api_see_movie[i]['url']
+
+    text = ''
+    for key, val in memory_dict.items():
+        text += f'{key}: {val}\n\n'
 
     return text
 

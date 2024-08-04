@@ -4,7 +4,7 @@ from aiogram import Router
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
 from handlers.help import send_help_message
-from keybords.cmd_start.start_inline import create_start_kb, MenuCallback
+from keyboards.cmd_start.start_inline import create_start_kb, MenuCallback
 from messages import messages
 from states.for_search_movie_hand import Keyword
 from typing import Union

@@ -4,5 +4,4 @@ route = Router()
 
 
 class FavoriteStates(StatesGroup):
-    next = State()
-    prev = State()
+    wait_number = State()
