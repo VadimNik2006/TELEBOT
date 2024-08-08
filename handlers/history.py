@@ -7,7 +7,6 @@ from utils import print_history
 from api.controller import api_controller
 from aiogram.fsm.context import FSMContext
 
-
 route = Router()
 
 
@@ -16,8 +15,10 @@ def history_db(user_id, film_id):
 
 
 async def send_history(message: types.Message):
+    data = print_history(history_data=db_controller.get_all_history(user_id=message.from_user.id),
+                         api_controller=api_controller)
     await message.answer(
-        text=f"<b>История запросов:</b> {print_history(history_data=db_controller.get_all_history(user_id=message.from_user.id), api_controller=api_controller)}",
+        text=f"<b>История запросов:</b> {data}",
         parse_mode=ParseMode.HTML)
 
 

@@ -49,7 +49,3 @@ async def call_command(update: Union[types.CallbackQuery, types.Message], state:
     elif command == "search_movie":
         await message.answer("Введите ключевое слово в названии фильма")
         await state.set_state(Keyword.wait_from_similar)
-    elif command == "favorite":
-        await send_favorite(message)
-    elif command == "history":
-        await send_history(message)
